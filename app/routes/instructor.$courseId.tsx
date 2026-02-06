@@ -33,6 +33,7 @@ import { getEnrollmentCountForCourse } from "~/services/enrollmentService";
 import { getCurrentUserId } from "~/lib/session";
 import { getUserById } from "~/services/userService";
 import { CourseStatus, UserRole } from "~/db/schema";
+import { formatDuration } from "~/lib/utils";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -1166,7 +1167,7 @@ export default function InstructorCourseEditor({
                                                 {lesson.durationMinutes && (
                                                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                                     <Clock className="size-3" />
-                                                    {lesson.durationMinutes}m
+                                                    {formatDuration(lesson.durationMinutes, true, false, false)}
                                                   </span>
                                                 )}
                                                 <Link

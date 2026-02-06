@@ -12,6 +12,7 @@ import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, CheckCircle2, Circle, Clock, PlayCircle, User } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
+import { formatDuration } from "~/lib/utils";
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
   const title = loaderData?.course?.title ?? "Course";
@@ -282,7 +283,7 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
                               {lesson.durationMinutes && (
                                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Clock className="size-3" />
-                                  {lesson.durationMinutes}m
+                                  {formatDuration(lesson.durationMinutes, true, false, false)}
                                 </span>
                               )}
                             </Link>
@@ -293,7 +294,7 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
                               {lesson.durationMinutes && (
                                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Clock className="size-3" />
-                                  {lesson.durationMinutes}m
+                                  {formatDuration(lesson.durationMinutes, true, false, false)}
                                 </span>
                               )}
                             </div>

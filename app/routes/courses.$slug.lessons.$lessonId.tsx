@@ -32,6 +32,7 @@ import {
   Trophy,
   RotateCcw,
 } from "lucide-react";
+import { formatDuration } from "~/lib/utils";
 import { YouTubePlayer } from "~/components/youtube-player";
 import { data, isRouteErrorResponse } from "react-router";
 
@@ -322,7 +323,7 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
         {lesson.durationMinutes && (
           <div className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
             <Clock className="size-4" />
-            {lesson.durationMinutes} min
+            {formatDuration(lesson.durationMinutes, true, false, false)}
           </div>
         )}
 
