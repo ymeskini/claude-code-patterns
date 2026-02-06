@@ -26,7 +26,9 @@ export default function AppLayout({ loaderData }: Route.ComponentProps) {
     <div className="flex h-screen overflow-hidden">
       <Sidebar currentUserRole={currentUser?.role ?? null} />
       <main className="flex-1 overflow-y-auto">
-        <Outlet />
+        <div className="mx-auto max-w-7xl">
+          <Outlet />
+        </div>
       </main>
       <DevUI users={users} currentUser={currentUser} />
       <Toaster position="bottom-right" richColors closeButton />
