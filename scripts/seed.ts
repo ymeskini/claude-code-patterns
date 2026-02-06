@@ -316,7 +316,7 @@ By the end of this course, you'll understand why TypeScript has become the defau
       instructorId: instructor1.id,
       categoryId: catBySlug["programming"].id,
       status: CourseStatus.Published,
-      coverImageUrl: "https://picsum.photos/seed/typescript/800/400",
+      coverImageUrl: "/images/course-typescript.svg",
       createdAt: daysAgo(90),
       updatedAt: daysAgo(10),
     })
@@ -550,7 +550,7 @@ Every lesson is focused and practical. No 45-minute lectures where 40 minutes ar
       instructorId: instructor2.id,
       categoryId: catBySlug["programming"].id,
       status: CourseStatus.Published,
-      coverImageUrl: "https://picsum.photos/seed/nodejs-api/800/400",
+      coverImageUrl: "/images/course-nodejs.svg",
       createdAt: daysAgo(75),
       updatedAt: daysAgo(5),
     })

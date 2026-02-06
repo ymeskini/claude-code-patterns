@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card"
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, GraduationCap, Plus, Users } from "lucide-react";
+import { CourseImage } from "~/components/course-image";
 import { data, isRouteErrorResponse } from "react-router";
 import { CourseStatus, UserRole } from "~/db/schema";
 
@@ -166,15 +167,13 @@ export default function InstructorDashboard({
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <Card key={course.id} className="flex flex-col">
-              {course.coverImageUrl && (
-                <div className="aspect-video overflow-hidden rounded-t-lg">
-                  <img
-                    src={course.coverImageUrl}
-                    alt={course.title}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
+              <div className="aspect-video overflow-hidden rounded-t-lg">
+                <CourseImage
+                  src={course.coverImageUrl}
+                  alt={course.title}
+                  className="h-full w-full object-cover"
+                />
+              </div>
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <Link

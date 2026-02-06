@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, CheckCircle2, Circle, Clock, PlayCircle, User } from "lucide-react";
+import { CourseImage } from "~/components/course-image";
 import { data, isRouteErrorResponse } from "react-router";
 import { formatDuration } from "~/lib/utils";
 
@@ -194,15 +195,13 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
         <>
           <div className="mb-8 grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              {course.coverImageUrl && (
-                <div className="mb-6 aspect-video overflow-hidden rounded-lg">
-                  <img
-                    src={course.coverImageUrl}
-                    alt={course.title}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
+              <div className="mb-6 aspect-video overflow-hidden rounded-lg">
+                <CourseImage
+                  src={course.coverImageUrl}
+                  alt={course.title}
+                  className="h-full w-full object-cover"
+                />
+              </div>
               <div className="mb-2 text-sm font-medium text-primary">
                 {course.categoryName}
               </div>
@@ -263,15 +262,13 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
         <>
           {/* Hero section */}
           <div className="mb-8">
-            {course.coverImageUrl && (
-              <div className="mb-6 aspect-video max-h-64 overflow-hidden rounded-lg">
-                <img
-                  src={course.coverImageUrl}
-                  alt={course.title}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            )}
+            <div className="mb-6 aspect-video max-h-64 overflow-hidden rounded-lg">
+              <CourseImage
+                src={course.coverImageUrl}
+                alt={course.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
             <div className="mb-2 text-sm font-medium text-primary">
               {course.categoryName}
             </div>

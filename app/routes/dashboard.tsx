@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card"
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, CheckCircle2, GraduationCap, PlayCircle } from "lucide-react";
+import { CourseImage } from "~/components/course-image";
 import { data, isRouteErrorResponse } from "react-router";
 
 export function meta() {
@@ -142,15 +143,13 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {inProgressCourses.map((course) => (
                   <Card key={course.enrollmentId} className="flex flex-col">
-                    {course.coverImageUrl && (
-                      <div className="aspect-video overflow-hidden rounded-t-lg">
-                        <img
-                          src={course.coverImageUrl}
-                          alt={course.courseTitle}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    )}
+                    <div className="aspect-video overflow-hidden rounded-t-lg">
+                      <CourseImage
+                        src={course.coverImageUrl}
+                        alt={course.courseTitle}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <CardHeader>
                       <Link
                         to={`/courses/${course.courseSlug}`}
@@ -213,18 +212,16 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {completedCourses.map((course) => (
                   <Card key={course.enrollmentId} className="flex flex-col">
-                    {course.coverImageUrl && (
-                      <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                        <img
-                          src={course.coverImageUrl}
-                          alt={course.courseTitle}
-                          className="h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                          <CheckCircle2 className="size-12 text-white" />
-                        </div>
+                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
+                      <CourseImage
+                        src={course.coverImageUrl}
+                        alt={course.courseTitle}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <CheckCircle2 className="size-12 text-white" />
                       </div>
-                    )}
+                    </div>
                     <CardHeader>
                       <Link
                         to={`/courses/${course.courseSlug}`}

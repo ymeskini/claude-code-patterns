@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card"
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, Search, User } from "lucide-react";
+import { CourseImage } from "~/components/course-image";
 
 export function meta() {
   return [
@@ -149,15 +150,13 @@ export default function CourseCatalog({ loaderData }: Route.ComponentProps) {
               className="group"
             >
               <Card className="h-full transition-shadow group-hover:shadow-md">
-                {course.coverImageUrl && (
-                  <div className="aspect-video overflow-hidden rounded-t-lg">
-                    <img
-                      src={course.coverImageUrl}
-                      alt={course.title}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    />
-                  </div>
-                )}
+                <div className="aspect-video overflow-hidden rounded-t-lg">
+                  <CourseImage
+                    src={course.coverImageUrl}
+                    alt={course.title}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                </div>
                 <CardHeader>
                   <div className="mb-1 text-xs font-medium text-primary">
                     {course.categoryName}

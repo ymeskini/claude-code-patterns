@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card"
 import { buildCourseQuery, getLessonCountForCourse, getAllCategories } from "~/services/courseService";
 import { CourseStatus } from "~/db/schema";
 import { BookOpen, GraduationCap, Users, ArrowRight, User } from "lucide-react";
+import { CourseImage } from "~/components/course-image";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -118,17 +119,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             {featuredCourses.map((course) => (
               <Link key={course.id} to={`/courses/${course.slug}`} className="group">
                 <Card className="h-full transition-shadow group-hover:shadow-md">
-                  {course.coverImageUrl ? (
-                    <img
-                      src={course.coverImageUrl}
-                      alt={course.title}
-                      className="aspect-video w-full rounded-t-lg object-cover"
-                    />
-                  ) : (
-                    <div className="flex aspect-video items-center justify-center rounded-t-lg bg-muted">
-                      <BookOpen className="size-10 text-muted-foreground/40" />
-                    </div>
-                  )}
+                  <CourseImage
+                    src={course.coverImageUrl}
+                    alt={course.title}
+                    className="aspect-video w-full rounded-t-lg object-cover"
+                  />
                   <CardHeader>
                     <h3 className="font-semibold leading-snug group-hover:text-primary">
                       {course.title}
