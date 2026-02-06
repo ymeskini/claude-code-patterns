@@ -38,11 +38,12 @@ export function createUser(
 export function updateUser(
   id: number,
   name: string,
-  email: string
+  email: string,
+  bio: string | null
 ) {
   return db
     .update(users)
-    .set({ name, email })
+    .set({ name, email, bio })
     .where(eq(users.id, id))
     .returning()
     .get();

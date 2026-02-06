@@ -121,6 +121,7 @@ export function getCourseWithDetails(id: number) {
       createdAt: courses.createdAt,
       updatedAt: courses.updatedAt,
       instructorName: users.name,
+      instructorBio: users.bio,
       categoryName: categories.name,
     })
     .from(courses)

@@ -76,7 +76,8 @@ export async function action({ request }: Route.ActionArgs) {
     if (!email) {
       return data({ error: "Email cannot be empty." }, { status: 400 });
     }
-    updateUser(userId, name, email);
+    const user = getUserById(userId);
+    updateUser(userId, name, email, user?.bio ?? null);
     return { success: true };
   }
 

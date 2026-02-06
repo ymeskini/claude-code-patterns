@@ -339,6 +339,11 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
                       <User className="size-4" />
                       <span>Taught by {course.instructorName}</span>
                     </div>
+                    {course.instructorBio && (
+                      <p className="mt-2 text-xs leading-relaxed">
+                        {course.instructorBio}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>

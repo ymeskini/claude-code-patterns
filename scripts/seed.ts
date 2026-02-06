@@ -58,6 +58,7 @@ async function seed() {
       email TEXT NOT NULL UNIQUE,
       role TEXT NOT NULL,
       avatar_url TEXT,
+      bio TEXT,
       created_at TEXT NOT NULL
     );
 
@@ -188,6 +189,7 @@ async function seed() {
       email: "sarah.chen@ralph.dev",
       role: UserRole.Instructor,
       avatarUrl: "https://api.dicebear.com/9.x/avataaars/svg?seed=sarah",
+      bio: "Senior TypeScript engineer with 10 years of experience building large-scale web applications. Previously at Stripe and Vercel. Passionate about type safety and developer tooling.",
       createdAt: daysAgo(100),
     })
     .returning()
@@ -200,6 +202,7 @@ async function seed() {
       email: "marcus.johnson@ralph.dev",
       role: UserRole.Instructor,
       avatarUrl: "https://api.dicebear.com/9.x/avataaars/svg?seed=marcus",
+      bio: "Full-stack developer and API architect specializing in Node.js and cloud infrastructure. Has built and scaled APIs serving millions of requests daily. Conference speaker and open-source contributor.",
       createdAt: daysAgo(95),
     })
     .returning()

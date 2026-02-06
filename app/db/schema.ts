@@ -33,6 +33,7 @@ export const users = sqliteTable("users", {
   email: text("email").notNull().unique(),
   role: text("role").notNull().$type<UserRole>(),
   avatarUrl: text("avatar_url"),
+  bio: text("bio"),
   createdAt: text("created_at")
     .notNull()
     .$defaultFn(() => new Date().toISOString()),

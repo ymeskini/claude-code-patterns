@@ -21,6 +21,7 @@ export function createTestDb() {
     email TEXT NOT NULL UNIQUE,
     role TEXT NOT NULL,
     avatar_url TEXT,
+    bio TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`);
 

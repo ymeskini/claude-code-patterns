@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Textarea } from "~/components/ui/textarea";
+import { UserRole } from "~/db/schema";
 import { AlertTriangle } from "lucide-react";
 import { data, isRouteErrorResponse, Link } from "react-router";
 
@@ -38,6 +40,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       id: currentUser.id,
       name: currentUser.name,
       email: currentUser.email,
+      bio: currentUser.bio,
+      role: currentUser.role,
     },
   };
 }
@@ -56,12 +60,13 @@ export async function action({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
   const name = (formData.get("name") as string)?.trim();
+  const bio = (formData.get("bio") as string)?.trim() || null;
 
   if (!name) {
     return data({ error: "Name cannot be empty." }, { status: 400 });
   }
 
-  updateUser(currentUser.id, name, currentUser.email);
+  updateUser(currentUser.id, name, currentUser.email, bio);
   return { success: true };
 }
 
@@ -72,7 +77,7 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.success) {
-      toast.success("Name updated successfully.");
+      toast.success("Profile updated successfully.");
     }
     if (fetcher.state === "idle" && fetcher.data?.error) {
       toast.error(fetcher.data.error);
@@ -127,6 +132,21 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
                 Email cannot be changed.
               </p>
             </div>
+            {user.role === UserRole.Instructor && (
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  name="bio"
+                  rows={4}
+                  defaultValue={user.bio ?? ""}
+                  placeholder="Tell students about yourself..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your bio is shown on your course pages.
+                </p>
+              </div>
+            )}
             <Button
               type="submit"
               disabled={fetcher.state !== "idle"}
