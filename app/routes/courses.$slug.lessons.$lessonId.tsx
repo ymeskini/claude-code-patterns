@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useFetcher } from "react-router";
+import hljs from "highlight.js/lib/common";
 import { toast } from "sonner";
 import type { Route } from "./+types/courses.$slug.lessons.$lessonId";
 import { getCourseBySlug, getCourseWithDetails } from "~/services/courseService";
@@ -306,6 +307,18 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
   } = loaderData;
   const fetcher = useFetcher({ key: `mark-complete-${lesson.id}` });
   const quizFetcher = useFetcher({ key: `quiz-${lesson.id}` });
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current
+        .querySelectorAll("pre code:not(.hljs)")
+        .forEach((el) => {
+          hljs.highlightElement(el as HTMLElement);
+        });
+    }
+  }, [lesson.id, lesson.contentHtml]);
+
   const isMarking =
     fetcher.state !== "idle" && fetcher.formData?.get("intent") === "mark-complete";
 
@@ -369,6 +382,7 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
         {/* Lesson Content */}
         {lesson.contentHtml && (
           <div
+            ref={contentRef}
             className="prose prose-neutral dark:prose-invert mb-8 max-w-none"
             dangerouslySetInnerHTML={{ __html: lesson.contentHtml }}
           />

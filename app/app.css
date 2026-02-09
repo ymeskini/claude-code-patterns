@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "highlight.js/styles/github-dark.css";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
@@ -128,6 +129,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Syntax highlighting overrides — let prose handle pre layout */
+.prose pre code.hljs {
+  padding: 0;
+  background: transparent;
 }
 
 /* TipTap editor styles */
