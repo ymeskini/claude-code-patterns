@@ -31,7 +31,9 @@ import {
   Circle,
   Clock,
   HelpCircle,
+  MapPin,
   PlayCircle,
+  ShieldAlert,
   XCircle,
   Trophy,
   RotateCcw,
@@ -40,6 +42,9 @@ import { cn, formatDuration } from "~/lib/utils";
 import { renderMarkdown } from "~/lib/markdown.server";
 import { YouTubePlayer } from "~/components/youtube-player";
 import { data, isRouteErrorResponse } from "react-router";
+import { resolveCountry } from "~/lib/country.server";
+import { getTierForCountry, COUNTRIES } from "~/lib/ppp";
+import { findPurchase } from "~/services/purchaseService";
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
   const title = loaderData?.lesson?.title ?? "Lesson";
@@ -147,6 +152,28 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     }
   }
 
+  // PPP Access Guard
+  // Skip for: free courses, non-PPP courses, full-price (Tier 1) purchases
+  let pppBlocked = false;
+  let pppBlockedCountry: string | null = null;
+  let pppPurchaseCountry: string | null = null;
+
+  if (enrolled && currentUserId && course.price > 0 && course.pppEnabled) {
+    const purchase = findPurchase(currentUserId, course.id);
+    if (purchase && purchase.country) {
+      const purchaseTier = getTierForCountry(purchase.country);
+      if (purchaseTier > 1) {
+        // This was a discounted purchase — verify country match
+        const currentCountry = await resolveCountry(request);
+        if (currentCountry && currentCountry !== purchase.country) {
+          pppBlocked = true;
+          pppBlockedCountry = currentCountry;
+          pppPurchaseCountry = purchase.country;
+        }
+      }
+    }
+  }
+
   // Render lesson content from Markdown to HTML server-side
   const contentHtml = lesson.content
     ? await renderMarkdown(lesson.content)
@@ -236,6 +263,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     lastWatchPosition,
     watchProgress,
     lessonProgressMap,
+    pppBlocked,
+    pppBlockedCountry,
+    pppPurchaseCountry,
   };
 }
 
@@ -311,6 +341,9 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
     lastWatchPosition,
     watchProgress,
     lessonProgressMap,
+    pppBlocked,
+    pppBlockedCountry,
+    pppPurchaseCountry,
   } = loaderData;
   const fetcher = useFetcher({ key: `mark-complete-${lesson.id}` });
   const quizFetcher = useFetcher({ key: `quiz-${lesson.id}` });
@@ -334,6 +367,42 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
 
   const quizResult = quizFetcher.data?.quizResult ?? null;
   const isSubmittingQuiz = quizFetcher.state !== "idle";
+
+  if (pppBlocked) {
+    const purchaseCountryName = pppPurchaseCountry
+      ? COUNTRIES.find((c) => c.code === pppPurchaseCountry)?.name ?? pppPurchaseCountry
+      : "your original country";
+    const currentCountryName = pppBlockedCountry
+      ? COUNTRIES.find((c) => c.code === pppBlockedCountry)?.name ?? pppBlockedCountry
+      : "a different country";
+
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center p-6">
+        <div className="max-w-md text-center">
+          <ShieldAlert className="mx-auto mb-4 size-16 text-amber-500" />
+          <h1 className="mb-3 text-2xl font-bold">Access Restricted</h1>
+          <p className="mb-4 text-muted-foreground">
+            You purchased this course with a Purchasing Power Parity discount
+            while in <strong>{purchaseCountryName}</strong>, but you're currently
+            accessing from <strong>{currentCountryName}</strong>.
+          </p>
+          <p className="mb-6 text-sm text-muted-foreground">
+            PPP-discounted courses can only be accessed from the country where
+            the purchase was made. This helps keep courses affordable for
+            students in lower-income regions.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Link to={`/courses/${course.slug}`}>
+              <Button variant="outline">
+                <MapPin className="mr-2 size-4" />
+                Back to Course
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex">
