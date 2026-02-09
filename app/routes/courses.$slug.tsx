@@ -11,7 +11,7 @@ import { LessonProgressStatus } from "~/db/schema";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { AlertTriangle, BookOpen, CheckCircle2, Circle, Clock, PlayCircle } from "lucide-react";
+import { AlertTriangle, BookOpen, CheckCircle2, Circle, Clock, Pencil, PlayCircle } from "lucide-react";
 import { CourseImage } from "~/components/course-image";
 import { UserAvatar } from "~/components/user-avatar";
 import { data, isRouteErrorResponse } from "react-router";
@@ -203,7 +203,17 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
         <div className="mb-2 text-sm font-medium text-primary">
           {course.categoryName}
         </div>
-        <h1 className="mb-3 text-4xl font-bold">{course.title}</h1>
+        <div className="mb-3 flex items-start justify-between gap-4">
+          <h1 className="text-4xl font-bold">{course.title}</h1>
+          {currentUserId === course.instructorId && (
+            <Link to={`/instructor/${course.id}`}>
+              <Button variant="outline" size="sm" className="shrink-0">
+                <Pencil className="mr-1.5 size-3.5" />
+                Edit Course
+              </Button>
+            </Link>
+          )}
+        </div>
         <p className="mb-4 text-lg text-muted-foreground">{course.description}</p>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
