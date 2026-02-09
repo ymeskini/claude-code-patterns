@@ -1,9 +1,11 @@
 import { useRef, useEffect } from "react";
 import { useFetcher } from "react-router";
 import { toast } from "sonner";
+import { z } from "zod";
 import type { Route } from "./+types/settings";
 import { getCurrentUserId } from "~/lib/session";
 import { getUserById, updateUser } from "~/services/userService";
+import { parseFormData } from "~/lib/validation";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -12,6 +14,11 @@ import { Textarea } from "~/components/ui/textarea";
 import { UserRole } from "~/db/schema";
 import { AlertTriangle } from "lucide-react";
 import { data, isRouteErrorResponse, Link } from "react-router";
+
+const settingsSchema = z.object({
+  name: z.string().trim().min(1, "Name cannot be empty."),
+  bio: z.string().trim().optional(),
+});
 
 export function meta() {
   return [
@@ -59,14 +66,15 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const formData = await request.formData();
-  const name = (formData.get("name") as string)?.trim();
-  const bio = (formData.get("bio") as string)?.trim() || null;
+  const parsed = parseFormData(formData, settingsSchema);
 
-  if (!name) {
-    return data({ error: "Name cannot be empty." }, { status: 400 });
+  if (!parsed.success) {
+    return data({ errors: parsed.errors }, { status: 400 });
   }
 
-  updateUser(currentUser.id, name, currentUser.email, bio);
+  const { name, bio } = parsed.data;
+
+  updateUser(currentUser.id, name, currentUser.email, bio || null);
   return { success: true };
 }
 
@@ -79,8 +87,9 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
     if (fetcher.state === "idle" && fetcher.data?.success) {
       toast.success("Profile updated successfully.");
     }
-    if (fetcher.state === "idle" && fetcher.data?.error) {
-      toast.error(fetcher.data.error);
+    if (fetcher.state === "idle" && fetcher.data?.errors) {
+      const firstError = Object.values(fetcher.data.errors)[0] as string | undefined;
+      if (firstError) toast.error(firstError);
     }
   }, [fetcher.state, fetcher.data]);
 

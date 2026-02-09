@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, redirect, useFetcher } from "react-router";
 import { toast } from "sonner";
+import { z } from "zod";
 import type { Route } from "./+types/instructor.new";
 import { createCourse, generateSlug, getAllCategories, getCourseBySlug } from "~/services/courseService";
 import { getCurrentUserId } from "~/lib/session";
 import { getUserById } from "~/services/userService";
+import { parseFormData } from "~/lib/validation";
 import { UserRole } from "~/db/schema";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -20,6 +22,13 @@ import {
 } from "~/components/ui/select";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
+
+const newCourseSchema = z.object({
+  title: z.string().trim().min(1, "Title is required."),
+  description: z.string().trim().min(1, "Description is required."),
+  categoryId: z.string().min(1, "Category is required."),
+  coverImageUrl: z.string().trim().optional(),
+});
 
 export function meta() {
   return [
@@ -64,46 +73,31 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const formData = await request.formData();
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const categoryId = formData.get("categoryId") as string;
-  const coverImageUrl = (formData.get("coverImageUrl") as string) || null;
+  const parsed = parseFormData(formData, newCourseSchema);
 
-  const errors: Record<string, string> = {};
-
-  if (!title || title.trim().length === 0) {
-    errors.title = "Title is required.";
+  if (!parsed.success) {
+    return data({ errors: parsed.errors }, { status: 400 });
   }
 
-  if (!description || description.trim().length === 0) {
-    errors.description = "Description is required.";
-  }
+  const { title, description, categoryId, coverImageUrl } = parsed.data;
 
-  if (!categoryId) {
-    errors.categoryId = "Category is required.";
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return data({ errors }, { status: 400 });
-  }
-
-  const slug = generateSlug(title.trim());
+  const slug = generateSlug(title);
 
   const existingCourse = getCourseBySlug(slug);
   if (existingCourse) {
-    const dupeErrors: Record<string, string> = {
-      title: "A course with a similar title already exists.",
-    };
-    return data({ errors: dupeErrors }, { status: 400 });
+    return data(
+      { errors: { title: "A course with a similar title already exists." } as Record<string, string> },
+      { status: 400 }
+    );
   }
 
   const course = createCourse(
-    title.trim(),
+    title,
     slug,
-    description.trim(),
+    description,
     currentUserId,
     parseInt(categoryId, 10),
-    coverImageUrl?.trim() || null
+    coverImageUrl || null
   );
 
   throw redirect(`/courses/${course.slug}`);
