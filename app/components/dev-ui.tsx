@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Form, useLocation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import type { UserRole } from "~/db/schema";
+import type { UserRole } from "~/server/db/schema";
 import { ChevronDown, ChevronUp, Globe } from "lucide-react";
 
 interface DevUser {

@@ -3,16 +3,16 @@ import type { Route } from "./+types/layout.app";
 import { Sidebar } from "~/components/sidebar";
 import { DevUI } from "~/components/dev-ui";
 import { Toaster } from "sonner";
-import { getAllUsers, getUserById } from "~/services/userService";
-import { getCurrentUserId, getDevCountry } from "~/lib/session";
+import { getAllUsers, getUserById } from "~/server/services/userService";
+import { getCurrentUserId, getDevCountry } from "~/server/lib/session";
 import {
   getRecentlyProgressedCourses,
   calculateProgress,
   getCompletedLessonCount,
   getTotalLessonCount,
-} from "~/services/progressService";
+} from "~/server/services/progressService";
 import { getCountryTierInfo, COUNTRIES } from "~/lib/ppp";
-import { isTeamAdmin } from "~/services/teamService";
+import { isTeamAdmin } from "~/server/services/teamService";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const users = getAllUsers();

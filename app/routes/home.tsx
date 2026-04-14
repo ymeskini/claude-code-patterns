@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 import type { Route } from "./+types/home";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
-import { buildCourseQuery, getLessonCountForCourse } from "~/services/courseService";
-import { getAllCategories } from "~/services/categoryService";
-import { CourseStatus } from "~/db/schema";
+import { buildCourseQuery, getLessonCountForCourse } from "~/server/services/courseService";
+import { getAllCategories } from "~/server/services/categoryService";
+import { CourseStatus } from "~/server/db/schema";
 import { BookOpen, GraduationCap, Users, ArrowRight, User, Moon, Sun } from "lucide-react";
 import { CourseImage } from "~/components/course-image";
 import { DevUI } from "~/components/dev-ui";
-import { getAllUsers, getUserById } from "~/services/userService";
-import { getCurrentUserId, getDevCountry } from "~/lib/session";
+import { getAllUsers, getUserById } from "~/server/services/userService";
+import { getCurrentUserId, getDevCountry } from "~/server/lib/session";
 import { getCountryTierInfo, COUNTRIES } from "~/lib/ppp";
 
 export function meta({}: Route.MetaArgs) {

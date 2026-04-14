@@ -3,18 +3,18 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import type { Route } from "./+types/redeem.$code";
-import { getCourseById } from "~/services/courseService";
-import { getCouponByCode, redeemCoupon } from "~/services/couponService";
-import { isUserEnrolled } from "~/services/enrollmentService";
-import { getCurrentUserId } from "~/lib/session";
-import { resolveCountry } from "~/lib/country.server";
-import { parseParams, parseFormData } from "~/lib/validation";
+import { getCourseById } from "~/server/services/courseService";
+import { getCouponByCode, redeemCoupon } from "~/server/services/couponService";
+import { isUserEnrolled } from "~/server/services/enrollmentService";
+import { getCurrentUserId } from "~/server/lib/session";
+import { resolveCountry } from "~/server/lib/country";
+import { parseParams, parseFormData } from "~/server/lib/validation";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Ticket, AlertCircle, CheckCircle2, Globe } from "lucide-react";
 import { data } from "react-router";
-import { db } from "~/db";
-import { purchases } from "~/db/schema";
+import { db } from "~/server/db";
+import { purchases } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 
 const redeemParamsSchema = z.object({

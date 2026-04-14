@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import type { Route } from "./+types/team";
-import { getCurrentUserId } from "~/lib/session";
-import { getTeamForAdmin } from "~/services/teamService";
-import { getCouponsForTeam } from "~/services/couponService";
-import { getCourseById } from "~/services/courseService";
-import { getUserById } from "~/services/userService";
+import { getCurrentUserId } from "~/server/lib/session";
+import { getTeamForAdmin } from "~/server/services/teamService";
+import { getCouponsForTeam } from "~/server/services/couponService";
+import { getCourseById } from "~/server/services/courseService";
+import { getUserById } from "~/server/services/userService";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Users, BookOpen, Copy, Check, AlertTriangle } from "lucide-react";

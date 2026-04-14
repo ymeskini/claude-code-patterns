@@ -2,9 +2,9 @@ import { Form, Link, useActionData, useNavigation, useSearchParams } from "react
 import { redirect, data } from "react-router";
 import { z } from "zod";
 import type { Route } from "./+types/login";
-import { getUserByEmail } from "~/services/userService";
-import { setCurrentUserId, getCurrentUserId } from "~/lib/session";
-import { parseFormData } from "~/lib/validation";
+import { getUserByEmail } from "~/server/services/userService";
+import { setCurrentUserId, getCurrentUserId } from "~/server/lib/session";
+import { parseFormData } from "~/server/lib/validation";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Card, CardContent } from "~/components/ui/card";

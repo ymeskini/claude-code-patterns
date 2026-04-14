@@ -1,8 +1,8 @@
 import { Link } from "react-router";
 import type { Route } from "./+types/dashboard";
-import { getUserEnrolledCourses } from "~/services/enrollmentService";
-import { calculateProgress, getCompletedLessonCount, getTotalLessonCount, getNextIncompleteLesson } from "~/services/progressService";
-import { getCurrentUserId } from "~/lib/session";
+import { getUserEnrolledCourses } from "~/server/services/enrollmentService";
+import { calculateProgress, getCompletedLessonCount, getTotalLessonCount, getNextIncompleteLesson } from "~/server/services/progressService";
+import { getCurrentUserId } from "~/server/lib/session";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
