@@ -408,7 +408,7 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
                       ) : null;
                     })()}
                   <Link to={teamPurchaseLink}>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full mt-2">
                       <Users className="mr-2 size-4" />
                       Buy More Seats
                     </Button>
@@ -417,7 +417,7 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
               ) : (
                 enrollButton
               )}
-              <div className="space-y-2 pt-2 text-sm text-muted-foreground">
+              <div className="space-y-2 pt-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <BookOpen className="size-4" />
                   <span>{lessonCount} lessons</span>
