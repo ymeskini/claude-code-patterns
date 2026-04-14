@@ -1,16 +1,3 @@
-<div align="center">
-<a href="https://www.aihero.dev/cohorts/ai-coding-for-real-engineers-with-claude-code-2026-04">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://res.cloudinary.com/total-typescript/image/upload/v1773381447/github-project-header-dark_2x.png" />
-    <source media="(prefers-color-scheme: light)" srcset="https://res.cloudinary.com/total-typescript/image/upload/v1773381447/github-project-header-light_2x.png" />
-    <img src="https://res.cloudinary.com/total-typescript/image/upload/v1773381447/github-project-header-light_2x.png" width="421" height="102" />
-    </picture>
-</a>
-</div>
-<br/>
-
-> The exercise repo for [AI Coding for Real Engineers with Claude Code](https://www.aihero.dev/cohorts/ai-coding-for-real-engineers-with-claude-code-2026-04) — a 2-week learning cohort starting March 30, 2026.
-
 This is a full-stack course platform (think a mini Udemy) built with React Router, TypeScript, SQLite, and Drizzle ORM. Throughout the cohort, you'll use Claude Code to explore, extend, and refactor this codebase — learning real engineering workflows for AI-assisted development along the way.
 
 ## Prerequisites
@@ -50,18 +37,6 @@ The app will be running at `http://localhost:5173`.
 | `pnpm reset <commit>`       | Reset your repo to a lesson checkpoint |
 | `pnpm cherry-pick <commit>` | Cherry-pick a lesson's solution        |
 
-## Course Structure
-
-The cohort is split across 6 days of content:
-
-1. **Before We Start** — Repo setup, playground walkthrough, model recommendations
-2. **Getting to Know Claude Code** — Sessions, prompting, IDE integration, permissions
-3. **Day 1: Fundamentals** — LLM constraints, subagents, codebase exploration, building features
-4. **Day 2: Steering** — Agent files (CLAUDE.md), skills, memory, custom workflows
-5. **Day 3: Planning** — Writing PRDs, multi-phase plans, tracer bullet development
-6. **Day 4: Feedback Loops** — Test-driven development, red-green-refactor with AI
-7. **Day 5: Ralph** — Agent automation, loops, background tasks
-8. **Day 6: Human in the Loop** — Kanban workflows, research, prototyping, architecture improvement
 
 ## Navigating Lessons
 
