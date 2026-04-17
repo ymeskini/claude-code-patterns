@@ -46,6 +46,8 @@ async function seed() {
   // Drop and recreate tables for a clean seed
   sqlite.exec(`
     DROP TABLE IF EXISTS video_watch_events;
+    DROP TABLE IF EXISTS lesson_comments;
+    DROP TABLE IF EXISTS course_ratings;
     DROP TABLE IF EXISTS quiz_answers;
     DROP TABLE IF EXISTS quiz_attempts;
     DROP TABLE IF EXISTS quiz_options;
@@ -1593,6 +1595,66 @@ You've completed the Building REST APIs course. You now have the skills to build
 
   console.log("Created video watch events.");
 
+  // ─── Lesson Comments ───
+
+  const seededComments = db
+    .insert(schema.lessonComments)
+    .values([
+      {
+        lessonId: course1LessonIds[0], // "What is TypeScript?"
+        userId: students[0].id, // Emma
+        content:
+          "Great introduction! The comparison with plain JavaScript really helped me understand the value proposition.",
+        createdAt: daysAgo(48),
+      },
+      {
+        lessonId: course1LessonIds[0],
+        userId: students[1].id, // James
+        content:
+          "I've been using TypeScript for a few months now and this lesson explained some concepts I had been confused about. Thanks!",
+        createdAt: daysAgo(43),
+      },
+      {
+        lessonId: course1LessonIds[2], // "Your First TypeScript Program"
+        userId: students[0].id, // Emma
+        content:
+          "The step-by-step walkthrough of the compilation process was really helpful. Took me a while to get tsconfig right though.",
+        createdAt: daysAgo(45),
+      },
+      {
+        lessonId: course1LessonIds[7], // "Generics Basics"
+        userId: students[1].id, // James
+        content:
+          "Generics finally clicked for me after this lesson. The identity function example is a perfect starting point.",
+        createdAt: daysAgo(30),
+      },
+      {
+        lessonId: course1LessonIds[7],
+        userId: students[2].id, // Olivia
+        content:
+          "Could you explain when to use generics vs union types? I sometimes struggle to pick the right approach.",
+        createdAt: daysAgo(25),
+      },
+      {
+        lessonId: course2LessonIds[0], // "What is a REST API?"
+        userId: students[0].id, // Emma
+        content:
+          "Coming from a frontend background, this lesson was a perfect bridge to understanding backend concepts.",
+        createdAt: daysAgo(38),
+      },
+      {
+        lessonId: course2LessonIds[4], // "Express Router"
+        userId: students[2].id, // Olivia
+        content:
+          "The router organization pattern makes so much more sense than having everything in one file. Great lesson!",
+        createdAt: daysAgo(22),
+      },
+    ])
+    .returning()
+    .all();
+
+  console.log(`Created ${seededComments.length} lesson comments.`);
+
   // ─── Purchases ───
   // Individual purchases for enrolled students
 
@@ -1734,6 +1796,7 @@ You've completed the Building REST APIs course. You now have the skills to build
     `  Courses: 2 (${course1LessonIds.length} + ${course2LessonIds.length} lessons)`
   );
   console.log("  Quizzes: 3");
+  console.log(`  Lesson comments: ${seededComments.length}`);
   console.log("  Enrollments: 7");
   console.log("  Purchases: 6 (5 individual + 1 team)");
   console.log("  Teams: 1 (with 5 coupons)");
