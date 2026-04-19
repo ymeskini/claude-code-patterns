@@ -5,7 +5,7 @@ import * as schema from "~/server/db/schema";
 let testDb: ReturnType<typeof createTestDb>;
 let base: ReturnType<typeof seedBaseData>;
 
-vi.mock("~/db", () => ({
+vi.mock("~/server/db", () => ({
   get db() {
     return testDb;
   },
