@@ -32,6 +32,11 @@ import {
   createComment,
   deleteComment,
 } from "~/server/services/commentService";
+import {
+  getBookmarkedLessonIds,
+  isLessonBookmarked,
+  toggleBookmark,
+} from "~/server/services/bookmarkService";
 import { getUserById } from "~/server/services/userService";
 import { LessonProgressStatus, UserRole } from "~/server/db/schema";
 import { Button } from "~/components/ui/button";
@@ -40,6 +45,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { UserAvatar } from "~/components/user-avatar";
 import {
   AlertTriangle,
+  Bookmark,
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
@@ -149,6 +155,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   let lastWatchPosition = 0;
   let watchProgress = 0;
   let lessonProgressMap: Record<number, string> = {};
+  let bookmarkedLessonIds: number[] = [];
+  let isBookmarked = false;
 
   if (currentUserId) {
     enrolled = isUserEnrolled(currentUserId, course.id);
@@ -180,6 +188,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
           );
         }
       }
+
+      bookmarkedLessonIds = getBookmarkedLessonIds({
+        userId: currentUserId,
+        courseId: course.id,
+      });
+      isBookmarked = isLessonBookmarked({
+        userId: currentUserId,
+        lessonId,
+      });
     }
   }
 
@@ -306,6 +323,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     pppPurchaseCountry,
     comments,
     canModerateComments,
+    bookmarkedLessonIds,
+    isBookmarked,
   };
 }
 
@@ -410,6 +429,14 @@ export async function action({ params, request }: Route.ActionArgs) {
     return { success: true, intent: "delete-comment" };
   }
 
+  if (intent === "toggle-bookmark") {
+    if (!isUserEnrolled(currentUserId, course.id)) {
+      throw data("You must be enrolled to bookmark.", { status: 403 });
+    }
+    const result = toggleBookmark({ userId: currentUserId, lessonId });
+    return { success: true, intent: "toggle-bookmark", ...result };
+  }
+
   throw data("Invalid action", { status: 400 });
 }
 
@@ -463,6 +490,8 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
     pppPurchaseCountry,
     comments,
     canModerateComments,
+    bookmarkedLessonIds,
+    isBookmarked,
   } = loaderData;
   const [autoplay, toggleAutoplay] = useAutoplay();
   const fetcher = useFetcher({ key: `mark-complete-${lesson.id}` });
@@ -535,6 +564,7 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
         currentLessonId={lesson.id}
         lessonProgressMap={lessonProgressMap}
         enrolled={enrolled}
+        bookmarkedLessonIds={new Set(bookmarkedLessonIds)}
       />
 
       <div className="flex-1 p-6 lg:p-8">
@@ -582,6 +612,9 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
                   Open Code
                 </Button>
               </a>
+            )}
+            {enrolled && currentUserId && (
+              <BookmarkToggle isBookmarked={isBookmarked} lessonId={lesson.id} />
             )}
           </div>
 
@@ -736,12 +769,50 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
   );
 }
 
+function BookmarkToggle({
+  isBookmarked,
+  lessonId,
+}: {
+  isBookmarked: boolean;
+  lessonId: number;
+}) {
+  const fetcher = useFetcher({ key: `bookmark-${lessonId}` });
+  const pending = fetcher.state !== "idle";
+  const optimistic = fetcher.formData?.get("intent") === "toggle-bookmark";
+  const bookmarked = optimistic ? !isBookmarked : isBookmarked;
+
+  return (
+    <fetcher.Form method="post">
+      <input type="hidden" name="intent" value="toggle-bookmark" />
+      <Button
+        type="submit"
+        variant="outline"
+        size="sm"
+        disabled={pending}
+        aria-pressed={bookmarked}
+        aria-label={bookmarked ? "Remove bookmark" : "Bookmark this lesson"}
+      >
+        <Bookmark
+          className={cn(
+            "mr-1.5 size-4",
+            bookmarked
+              ? "fill-amber-500 text-amber-500"
+              : "text-muted-foreground"
+          )}
+        />
+        {bookmarked ? "Bookmarked" : "Bookmark"}
+      </Button>
+    </fetcher.Form>
+  );
+}
+
 function CurriculumSidebar({
   course,
   curriculum,
   currentLessonId,
   lessonProgressMap,
   enrolled,
+  bookmarkedLessonIds,
 }: {
   course: { id: number; title: string; slug: string };
   curriculum: Array<{
@@ -752,6 +823,7 @@ function CurriculumSidebar({
   currentLessonId: number;
   lessonProgressMap: Record<number, string>;
   enrolled: boolean;
+  bookmarkedLessonIds: Set<number>;
 }) {
   // Find which module the current lesson belongs to
   const currentModuleId = curriculum.find((m) =>
@@ -792,6 +864,9 @@ function CurriculumSidebar({
         <nav className="flex-1 p-2">
           {curriculum.map((mod) => {
             const isExpanded = expandedModules.has(mod.id);
+            const hasBookmarkedLesson = mod.lessons.some((l) =>
+              bookmarkedLessonIds.has(l.id)
+            );
 
             return (
               <div key={mod.id} className="mb-1">
@@ -806,6 +881,9 @@ function CurriculumSidebar({
                     )}
                   />
                   <span className="flex-1 text-left">{mod.title}</span>
+                  {hasBookmarkedLesson && (
+                    <Bookmark className="size-3.5 shrink-0 fill-amber-500 text-amber-500" />
+                  )}
                 </button>
 
                 {isExpanded && (
@@ -817,6 +895,7 @@ function CurriculumSidebar({
                         status === LessonProgressStatus.Completed;
                       const isInProgress =
                         status === LessonProgressStatus.InProgress;
+                      const isLessonBookmarked = bookmarkedLessonIds.has(l.id);
 
                       return (
                         <li key={l.id}>
@@ -840,7 +919,10 @@ function CurriculumSidebar({
                             ) : (
                               <Circle className="size-3.5 shrink-0" />
                             )}
-                            <span className="truncate">{l.title}</span>
+                            <span className="flex-1 truncate">{l.title}</span>
+                            {isLessonBookmarked && (
+                              <Bookmark className="size-3.5 shrink-0 fill-amber-500 text-amber-500" />
+                            )}
                           </Link>
                         </li>
                       );
