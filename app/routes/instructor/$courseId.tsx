@@ -1065,6 +1065,88 @@ function InsightsSummary({
   );
 }
 
+function InsightsQuizBreakdown({
+  insights,
+}: {
+  insights: { enrolledCount: number; quizzes: QuizInsightRow[] };
+}) {
+  const { enrolledCount, quizzes } = insights;
+
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-semibold">Per-quiz breakdown</h2>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Module
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Lesson
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Quiz
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Attempted
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Completion %
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Passed
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Pass %
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {quizzes.map((q) => {
+                const completionPct =
+                  enrolledCount === 0
+                    ? 0
+                    : Math.round((q.attempted / enrolledCount) * 100);
+                const passPct =
+                  q.attempted === 0
+                    ? null
+                    : Math.round((q.passed / q.attempted) * 100);
+
+                return (
+                  <tr
+                    key={q.quizId}
+                    className="border-b border-border last:border-0"
+                  >
+                    <td className="px-4 py-3 text-sm">{q.moduleTitle}</td>
+                    <td className="px-4 py-3 text-sm">{q.lessonTitle}</td>
+                    <td className="px-4 py-3 text-sm font-medium">
+                      {q.quizTitle}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                      {q.attempted} / {enrolledCount}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{completionPct}%</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                      {q.passed} / {q.attempted}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {passPct === null ? "—" : `${passPct}%`}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function InstructorCourseEditor({
   loaderData,
 }: Route.ComponentProps) {
@@ -1602,8 +1684,11 @@ export default function InstructorCourseEditor({
         </TabsContent>
 
         {/* Insights Tab */}
-        <TabsContent value="insights" className="mt-6">
+        <TabsContent value="insights" className="mt-6 space-y-6">
           <InsightsSummary insights={insights} />
+          {insights.quizzes.length > 0 && insights.enrolledCount > 0 && (
+            <InsightsQuizBreakdown insights={insights} />
+          )}
         </TabsContent>
 
         {/* Students Tab */}
