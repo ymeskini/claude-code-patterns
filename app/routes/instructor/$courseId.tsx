@@ -35,7 +35,12 @@ import {
 } from "~/server/services/lessonService";
 import { getEnrollmentCountForCourse, getCourseEnrolledStudents } from "~/server/services/enrollmentService";
 import { calculateProgress } from "~/server/services/progressService";
-import { getQuizByLessonId, getBestAttempt } from "~/server/services/quizService";
+import {
+  getQuizByLessonId,
+  getBestAttempt,
+  getQuizInsightsForCourse,
+  type QuizInsightRow,
+} from "~/server/services/quizService";
 import { getCurrentUserId } from "~/server/lib/session";
 import { getUserById } from "~/server/services/userService";
 import { CourseStatus, UserRole } from "~/server/db/schema";
@@ -69,6 +74,7 @@ import {
   Award,
   Globe,
   FileText,
+  BarChart3,
 } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
 import { z } from "zod";
@@ -185,7 +191,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const quizCount = lessonQuizzes.length;
 
-  return { course, lessonCount, enrollmentCount, students, quizCount };
+  const insights = {
+    enrolledCount: enrollmentCount,
+    quizzes: getQuizInsightsForCourse(courseId),
+  };
+
+  return { course, lessonCount, enrollmentCount, students, quizCount, insights };
 }
 
 export async function action({ params, request }: Route.ActionArgs) {
@@ -981,10 +992,83 @@ function statusBadgeColor(status: string) {
   }
 }
 
+function InsightsSummary({
+  insights,
+}: {
+  insights: { enrolledCount: number; quizzes: QuizInsightRow[] };
+}) {
+  const { enrolledCount, quizzes } = insights;
+
+  if (quizzes.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <BarChart3 className="mx-auto mb-3 size-8 text-muted-foreground/50" />
+          <p className="text-muted-foreground">
+            No quizzes in this course yet.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (enrolledCount === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <Users className="mx-auto mb-3 size-8 text-muted-foreground/50" />
+          <p className="text-muted-foreground">No students enrolled yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const perQuizCompletionRates = quizzes.map(
+    (q) => q.attempted / enrolledCount
+  );
+  const courseCompletionPct = Math.round(
+    (perQuizCompletionRates.reduce((a, b) => a + b, 0) /
+      perQuizCompletionRates.length) *
+      100
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-semibold">Course Overview</h2>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Enrolled
+            </p>
+            <p className="mt-1 text-2xl font-semibold">{enrolledCount}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Quizzes
+            </p>
+            <p className="mt-1 text-2xl font-semibold">{quizzes.length}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              Avg. completion rate
+            </p>
+            <p className="mt-1 text-2xl font-semibold">
+              {courseCompletionPct}%
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function InstructorCourseEditor({
   loaderData,
 }: Route.ComponentProps) {
-  const { course, lessonCount, enrollmentCount, students, quizCount } = loaderData;
+  const { course, lessonCount, enrollmentCount, students, quizCount, insights } = loaderData;
   const statusFetcher = useFetcher();
   const reorderFetcher = useFetcher();
   const lessonReorderFetcher = useFetcher();
@@ -1188,6 +1272,10 @@ export default function InstructorCourseEditor({
           <TabsTrigger value="sales-copy">
             <FileText className="size-4" />
             Sales Copy
+          </TabsTrigger>
+          <TabsTrigger value="insights">
+            <BarChart3 className="size-4" />
+            Insights
           </TabsTrigger>
           <TabsTrigger value="students">
             <Users className="size-4" />
@@ -1511,6 +1599,11 @@ export default function InstructorCourseEditor({
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Insights Tab */}
+        <TabsContent value="insights" className="mt-6">
+          <InsightsSummary insights={insights} />
         </TabsContent>
 
         {/* Students Tab */}

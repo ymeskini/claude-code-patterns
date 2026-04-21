@@ -6,8 +6,21 @@ import {
   quizOptions,
   quizAttempts,
   quizAnswers,
+  lessons,
+  modules,
   QuestionType,
 } from "~/server/db/schema";
+
+export type QuizInsightRow = {
+  quizId: number;
+  quizTitle: string;
+  lessonId: number;
+  lessonTitle: string;
+  moduleId: number;
+  moduleTitle: string;
+  attempted: number;
+  passed: number;
+};
 
 // ─── Quiz Service ───
 // Handles quiz CRUD, question/option management, and attempt recording.
@@ -376,4 +389,39 @@ export function getAttemptWithAnswers(attemptId: number) {
 
   const answers = getAnswersByAttempt(attemptId);
   return { ...attempt, answers };
+}
+
+// ─── Course-level Insights ───
+
+export function getQuizInsightsForCourse(courseId: number): QuizInsightRow[] {
+  const attemptedExpr = sql<number>`(
+    SELECT COUNT(DISTINCT ${quizAttempts.userId})
+    FROM ${quizAttempts}
+    WHERE ${quizAttempts.quizId} = ${quizzes.id}
+  )`;
+
+  const passedExpr = sql<number>`(
+    SELECT COUNT(DISTINCT ${quizAttempts.userId})
+    FROM ${quizAttempts}
+    WHERE ${quizAttempts.quizId} = ${quizzes.id}
+      AND ${quizAttempts.passed} = 1
+  )`;
+
+  return db
+    .select({
+      quizId: quizzes.id,
+      quizTitle: quizzes.title,
+      lessonId: lessons.id,
+      lessonTitle: lessons.title,
+      moduleId: modules.id,
+      moduleTitle: modules.title,
+      attempted: attemptedExpr,
+      passed: passedExpr,
+    })
+    .from(quizzes)
+    .innerJoin(lessons, eq(quizzes.lessonId, lessons.id))
+    .innerJoin(modules, eq(lessons.moduleId, modules.id))
+    .where(eq(modules.courseId, courseId))
+    .orderBy(modules.position, lessons.position)
+    .all();
 }
