@@ -12,7 +12,11 @@ vi.mock("~/server/db", () => ({
   },
 }));
 
-import { createNotification, getUnreadCount } from "./notificationService";
+import {
+  createNotification,
+  getNotifications,
+  getUnreadCount,
+} from "./notificationService";
 
 describe("notificationService", () => {
   beforeEach(() => {
@@ -106,6 +110,167 @@ describe("notificationService", () => {
         .run();
 
       expect(getUnreadCount(base.instructor.id)).toBe(0);
+    });
+  });
+
+  describe("getNotifications", () => {
+    it("returns an empty array when the user has no notifications", () => {
+      expect(
+        getNotifications({
+          userId: base.instructor.id,
+          limit: 5,
+          offset: 0,
+        })
+      ).toEqual([]);
+    });
+
+    it("returns notifications ordered by most recent first", () => {
+      const first = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "first",
+        linkUrl: "/instructor/1/students",
+      });
+      const second = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "second",
+        linkUrl: "/instructor/1/students",
+      });
+      const third = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "third",
+        linkUrl: "/instructor/1/students",
+      });
+
+      const result = getNotifications({
+        userId: base.instructor.id,
+        limit: 10,
+        offset: 0,
+      });
+
+      expect(result.map((n) => n.id)).toEqual([third.id, second.id, first.id]);
+    });
+
+    it("respects limit", () => {
+      for (let i = 0; i < 7; i++) {
+        createNotification({
+          recipientUserId: base.instructor.id,
+          type: schema.NotificationType.Enrollment,
+          title: "New Enrollment",
+          message: `n${i}`,
+          linkUrl: "/instructor/1/students",
+        });
+      }
+
+      const result = getNotifications({
+        userId: base.instructor.id,
+        limit: 5,
+        offset: 0,
+      });
+
+      expect(result).toHaveLength(5);
+    });
+
+    it("respects offset", () => {
+      const created = [];
+      for (let i = 0; i < 5; i++) {
+        created.push(
+          createNotification({
+            recipientUserId: base.instructor.id,
+            type: schema.NotificationType.Enrollment,
+            title: "New Enrollment",
+            message: `n${i}`,
+            linkUrl: "/instructor/1/students",
+          })
+        );
+      }
+
+      const page1 = getNotifications({
+        userId: base.instructor.id,
+        limit: 2,
+        offset: 0,
+      });
+      const page2 = getNotifications({
+        userId: base.instructor.id,
+        limit: 2,
+        offset: 2,
+      });
+
+      const newestFirstIds = [...created].reverse().map((n) => n.id);
+      expect(page1.map((n) => n.id)).toEqual(newestFirstIds.slice(0, 2));
+      expect(page2.map((n) => n.id)).toEqual(newestFirstIds.slice(2, 4));
+    });
+
+    it("only returns notifications owned by the given user", () => {
+      const otherInstructor = testDb
+        .insert(schema.users)
+        .values({
+          name: "Other Instructor",
+          email: "other@example.com",
+          role: schema.UserRole.Instructor,
+        })
+        .returning()
+        .get();
+
+      createNotification({
+        recipientUserId: otherInstructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "other",
+        linkUrl: "/instructor/1/students",
+      });
+      const mine = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "mine",
+        linkUrl: "/instructor/1/students",
+      });
+
+      const result = getNotifications({
+        userId: base.instructor.id,
+        limit: 10,
+        offset: 0,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(mine.id);
+    });
+
+    it("includes both read and unread notifications", () => {
+      const read = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "read",
+        linkUrl: "/instructor/1/students",
+      });
+      createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "unread",
+        linkUrl: "/instructor/1/students",
+      });
+
+      testDb
+        .update(schema.notifications)
+        .set({ isRead: true })
+        .where(eq(schema.notifications.id, read.id))
+        .run();
+
+      const result = getNotifications({
+        userId: base.instructor.id,
+        limit: 10,
+        offset: 0,
+      });
+
+      expect(result).toHaveLength(2);
     });
   });
 });

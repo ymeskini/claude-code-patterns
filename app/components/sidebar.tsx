@@ -4,6 +4,10 @@ import { cn } from "~/lib/utils";
 import { UserRole } from "~/server/db/schema";
 import { UserAvatar } from "~/components/user-avatar";
 import {
+  NotificationBell,
+  type NotificationItem,
+} from "~/components/notification-bell";
+import {
   BookOpen,
   LayoutDashboard,
   GraduationCap,
@@ -15,7 +19,6 @@ import {
   Sun,
   LogOut,
   Settings,
-  Bell,
 } from "lucide-react";
 
 interface CurrentUser {
@@ -40,6 +43,7 @@ interface SidebarProps {
   recentCourses?: RecentCourse[];
   isTeamAdmin?: boolean;
   unreadNotificationCount?: number;
+  recentNotifications?: NotificationItem[];
 }
 
 interface NavItem {
@@ -99,6 +103,7 @@ export function Sidebar({
   recentCourses = [],
   isTeamAdmin = false,
   unreadNotificationCount = 0,
+  recentNotifications = [],
 }: SidebarProps) {
   const currentUserRole = currentUser?.role ?? null;
   const showNotificationBell = currentUserRole === UserRole.Instructor;
@@ -124,21 +129,10 @@ export function Sidebar({
           Cadence
         </NavLink>
         {showNotificationBell && (
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative rounded-md p-1.5 text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          >
-            <Bell className="size-4" />
-            {unreadNotificationCount > 0 && (
-              <span
-                data-testid="notification-badge"
-                className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white"
-              >
-                {unreadNotificationCount}
-              </span>
-            )}
-          </button>
+          <NotificationBell
+            unreadCount={unreadNotificationCount}
+            notifications={recentNotifications}
+          />
         )}
       </div>
 

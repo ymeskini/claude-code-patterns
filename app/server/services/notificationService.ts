@@ -1,4 +1,4 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { db } from "~/server/db";
 import { notifications, NotificationType } from "~/server/db/schema";
 
@@ -35,4 +35,19 @@ export function getUnreadCount(userId: number) {
     .get();
 
   return result?.count ?? 0;
+}
+
+export function getNotifications(opts: {
+  userId: number;
+  limit: number;
+  offset: number;
+}) {
+  return db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.recipientUserId, opts.userId))
+    .orderBy(desc(notifications.createdAt), desc(notifications.id))
+    .limit(opts.limit)
+    .offset(opts.offset)
+    .all();
 }
