@@ -43,29 +43,18 @@ function slugify(title: string): string {
 async function seed() {
   console.log("Seeding database...");
 
-  // Drop and recreate tables for a clean seed
-  sqlite.exec(`
-    DROP TABLE IF EXISTS video_watch_events;
-    DROP TABLE IF EXISTS lesson_comments;
-    DROP TABLE IF EXISTS course_ratings;
-    DROP TABLE IF EXISTS quiz_answers;
-    DROP TABLE IF EXISTS quiz_attempts;
-    DROP TABLE IF EXISTS quiz_options;
-    DROP TABLE IF EXISTS quiz_questions;
-    DROP TABLE IF EXISTS quizzes;
-    DROP TABLE IF EXISTS lesson_progress;
-    DROP TABLE IF EXISTS coupons;
-    DROP TABLE IF EXISTS team_members;
-    DROP TABLE IF EXISTS teams;
-    DROP TABLE IF EXISTS purchases;
-    DROP TABLE IF EXISTS enrollments;
-    DROP TABLE IF EXISTS lessons;
-    DROP TABLE IF EXISTS modules;
-    DROP TABLE IF EXISTS courses;
-    DROP TABLE IF EXISTS categories;
-    DROP TABLE IF EXISTS users;
-    DROP TABLE IF EXISTS __drizzle_migrations;
-  `);
+  // Drop every user table so migrate() can recreate from scratch. Using
+  // sqlite_master keeps this resilient to new tables being added over time.
+  const tables = sqlite
+    .prepare<[], { name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    )
+    .all();
+  sqlite.pragma("foreign_keys = OFF");
+  for (const { name } of tables) {
+    sqlite.exec(`DROP TABLE IF EXISTS "${name}"`);
+  }
+  sqlite.pragma("foreign_keys = ON");
 
   // Create tables using the same Drizzle migrations as the live database
   migrate(db, { migrationsFolder });
