@@ -51,3 +51,30 @@ export function getNotifications(opts: {
     .offset(opts.offset)
     .all();
 }
+
+export function getNotificationById(notificationId: number) {
+  return db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.id, notificationId))
+    .get();
+}
+
+export function markAsRead(opts: { notificationId: number }) {
+  db.update(notifications)
+    .set({ isRead: true })
+    .where(eq(notifications.id, opts.notificationId))
+    .run();
+}
+
+export function markAllAsRead(opts: { userId: number }) {
+  db.update(notifications)
+    .set({ isRead: true })
+    .where(
+      and(
+        eq(notifications.recipientUserId, opts.userId),
+        eq(notifications.isRead, false)
+      )
+    )
+    .run();
+}

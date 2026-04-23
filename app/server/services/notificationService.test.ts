@@ -14,8 +14,11 @@ vi.mock("~/server/db", () => ({
 
 import {
   createNotification,
+  getNotificationById,
   getNotifications,
   getUnreadCount,
+  markAllAsRead,
+  markAsRead,
 } from "./notificationService";
 
 describe("notificationService", () => {
@@ -271,6 +274,107 @@ describe("notificationService", () => {
       });
 
       expect(result).toHaveLength(2);
+    });
+  });
+
+  describe("markAsRead", () => {
+    it("marks a single notification as read", () => {
+      const created = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "hello",
+        linkUrl: "/instructor/1/students",
+      });
+
+      markAsRead({ notificationId: created.id });
+
+      const after = getNotificationById(created.id);
+      expect(after?.isRead).toBe(true);
+    });
+
+    it("does not affect other notifications", () => {
+      const a = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "a",
+        linkUrl: "/instructor/1/students",
+      });
+      const b = createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "b",
+        linkUrl: "/instructor/1/students",
+      });
+
+      markAsRead({ notificationId: a.id });
+
+      expect(getNotificationById(a.id)?.isRead).toBe(true);
+      expect(getNotificationById(b.id)?.isRead).toBe(false);
+    });
+  });
+
+  describe("markAllAsRead", () => {
+    it("marks every unread notification for the user as read", () => {
+      createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "a",
+        linkUrl: "/instructor/1/students",
+      });
+      createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "b",
+        linkUrl: "/instructor/1/students",
+      });
+
+      markAllAsRead({ userId: base.instructor.id });
+
+      expect(getUnreadCount(base.instructor.id)).toBe(0);
+    });
+
+    it("does not touch notifications belonging to other users", () => {
+      const otherInstructor = testDb
+        .insert(schema.users)
+        .values({
+          name: "Other Instructor",
+          email: "other@example.com",
+          role: schema.UserRole.Instructor,
+        })
+        .returning()
+        .get();
+
+      createNotification({
+        recipientUserId: base.instructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "mine",
+        linkUrl: "/instructor/1/students",
+      });
+      createNotification({
+        recipientUserId: otherInstructor.id,
+        type: schema.NotificationType.Enrollment,
+        title: "New Enrollment",
+        message: "other",
+        linkUrl: "/instructor/1/students",
+      });
+
+      markAllAsRead({ userId: base.instructor.id });
+
+      expect(getUnreadCount(base.instructor.id)).toBe(0);
+      expect(getUnreadCount(otherInstructor.id)).toBe(1);
+    });
+
+    it("is a no-op when the user has no unread notifications", () => {
+      expect(() =>
+        markAllAsRead({ userId: base.instructor.id })
+      ).not.toThrow();
+      expect(getUnreadCount(base.instructor.id)).toBe(0);
     });
   });
 });
