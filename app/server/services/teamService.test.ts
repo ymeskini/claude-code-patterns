@@ -19,6 +19,7 @@ import {
   getOrCreateTeamForUser,
   isTeamAdmin,
   getTeamMembers,
+  getTeamAdmins,
 } from "./teamService";
 
 describe("teamService", () => {
@@ -130,6 +131,41 @@ describe("teamService", () => {
 
     it("returns false when user has no team", () => {
       expect(isTeamAdmin(base.user.id)).toBe(false);
+    });
+  });
+
+  describe("getTeamAdmins", () => {
+    it("returns only members with the Admin role", () => {
+      const team = createTeam();
+      addTeamMember(team.id, base.user.id, schema.TeamMemberRole.Admin);
+      addTeamMember(team.id, base.instructor.id, schema.TeamMemberRole.Member);
+
+      const admins = getTeamAdmins(team.id);
+
+      expect(admins).toHaveLength(1);
+      expect(admins[0].userId).toBe(base.user.id);
+    });
+
+    it("returns multiple admins when a team has more than one", () => {
+      const team = createTeam();
+      addTeamMember(team.id, base.user.id, schema.TeamMemberRole.Admin);
+      addTeamMember(team.id, base.instructor.id, schema.TeamMemberRole.Admin);
+
+      const admins = getTeamAdmins(team.id);
+
+      expect(admins).toHaveLength(2);
+      expect(admins.map((a) => a.userId).sort()).toEqual(
+        [base.user.id, base.instructor.id].sort()
+      );
+    });
+
+    it("returns an empty array when the team has no admins", () => {
+      const team = createTeam();
+      addTeamMember(team.id, base.user.id, schema.TeamMemberRole.Member);
+
+      const admins = getTeamAdmins(team.id);
+
+      expect(admins).toHaveLength(0);
     });
   });
 

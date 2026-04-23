@@ -1,7 +1,16 @@
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, sql } from "drizzle-orm";
 import { db } from "~/server/db";
-import { coupons, purchases, enrollments } from "~/server/db/schema";
+import {
+  coupons,
+  purchases,
+  enrollments,
+  courses,
+  users,
+  NotificationType,
+} from "~/server/db/schema";
 import crypto from "crypto";
+import { getTeamAdmins } from "~/server/services/teamService";
+import { createNotification } from "~/server/services/notificationService";
 
 // ─── Coupon Service ───
 // Handles coupon generation, redemption (with validation), and listing.
@@ -115,5 +124,59 @@ export function redeemCoupon(
     .returning()
     .get();
 
+  notifyTeamAdminsOfRedemption({
+    teamId: coupon.teamId,
+    courseId: coupon.courseId,
+    redeemerUserId: userId,
+  });
+
   return { ok: true, enrollment };
+}
+
+function notifyTeamAdminsOfRedemption(opts: {
+  teamId: number;
+  courseId: number;
+  redeemerUserId: number;
+}) {
+  const admins = getTeamAdmins(opts.teamId);
+  if (admins.length === 0) return;
+
+  const redeemer = db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, opts.redeemerUserId))
+    .get();
+  const course = db
+    .select({ title: courses.title })
+    .from(courses)
+    .where(eq(courses.id, opts.courseId))
+    .get();
+
+  if (!redeemer || !course) return;
+
+  const totals = db
+    .select({
+      total: sql<number>`count(*)`,
+      remaining: sql<number>`sum(case when ${coupons.redeemedByUserId} is null then 1 else 0 end)`,
+    })
+    .from(coupons)
+    .where(
+      and(eq(coupons.teamId, opts.teamId), eq(coupons.courseId, opts.courseId))
+    )
+    .get();
+
+  const totalSeats = totals?.total ?? 0;
+  const remainingSeats = totals?.remaining ?? 0;
+
+  const message = `${redeemer.name} redeemed a coupon for ${course.title} (${remainingSeats} of ${totalSeats} seats remaining)`;
+
+  for (const admin of admins) {
+    createNotification({
+      recipientUserId: admin.userId,
+      type: NotificationType.CouponRedemption,
+      title: "Seat Claimed",
+      message,
+      linkUrl: "/team",
+    });
+  }
 }
