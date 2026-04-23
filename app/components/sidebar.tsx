@@ -15,6 +15,7 @@ import {
   Sun,
   LogOut,
   Settings,
+  Bell,
 } from "lucide-react";
 
 interface CurrentUser {
@@ -38,6 +39,7 @@ interface SidebarProps {
   currentUser: CurrentUser | null;
   recentCourses?: RecentCourse[];
   isTeamAdmin?: boolean;
+  unreadNotificationCount?: number;
 }
 
 interface NavItem {
@@ -96,8 +98,10 @@ export function Sidebar({
   currentUser,
   recentCourses = [],
   isTeamAdmin = false,
+  unreadNotificationCount = 0,
 }: SidebarProps) {
   const currentUserRole = currentUser?.role ?? null;
+  const showNotificationBell = currentUserRole === UserRole.Instructor;
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -115,10 +119,27 @@ export function Sidebar({
 
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex h-14 items-center border-b border-sidebar-border px-4">
+      <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-4">
         <NavLink to="/" className="text-lg font-bold tracking-tight">
           Cadence
         </NavLink>
+        {showNotificationBell && (
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="relative rounded-md p-1.5 text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <Bell className="size-4" />
+            {unreadNotificationCount > 0 && (
+              <span
+                data-testid="notification-badge"
+                className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white"
+              >
+                {unreadNotificationCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 space-y-1 p-3">

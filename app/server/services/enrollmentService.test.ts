@@ -78,6 +78,25 @@ describe("enrollmentService", () => {
       const enrollment = enrollUser(base.user.id, base.course.id, true, false);
       expect(enrollment).toBeDefined();
     });
+
+    it("creates a notification for the course's instructor", () => {
+      enrollUser(base.user.id, base.course.id, false, false);
+
+      const created = testDb
+        .select()
+        .from(schema.notifications)
+        .all();
+
+      expect(created).toHaveLength(1);
+      expect(created[0].recipientUserId).toBe(base.instructor.id);
+      expect(created[0].type).toBe(schema.NotificationType.Enrollment);
+      expect(created[0].title).toBe("New Enrollment");
+      expect(created[0].message).toBe(
+        `${base.user.name} enrolled in ${base.course.title}`
+      );
+      expect(created[0].linkUrl).toBe(`/instructor/${base.course.id}/students`);
+      expect(created[0].isRead).toBe(false);
+    });
   });
 
   describe("unenrollUser", () => {
