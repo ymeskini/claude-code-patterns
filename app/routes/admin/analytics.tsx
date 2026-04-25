@@ -5,14 +5,16 @@ import { getCurrentUserId } from "~/server/lib/session";
 import { getUserById } from "~/server/services/userService";
 import { UserRole } from "~/server/db/schema";
 import {
-  ADMIN_ANALYTICS_PERIODS,
-  getStartDateForPeriod,
   getTopEarningCourse,
   getTotalEnrollments,
   getTotalRevenue,
+} from "~/server/services/adminAnalyticsService";
+import {
+  ADMIN_ANALYTICS_PERIODS,
+  getStartDateForPeriod,
   isAdminAnalyticsPeriod,
   type AdminAnalyticsPeriod,
-} from "~/server/services/adminAnalyticsService";
+} from "~/lib/admin-analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";

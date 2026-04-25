@@ -12,11 +12,9 @@ vi.mock("~/server/db", () => ({
 }));
 
 import {
-  getStartDateForPeriod,
   getTotalRevenue,
   getTotalEnrollments,
   getTopEarningCourse,
-  isAdminAnalyticsPeriod,
 } from "./adminAnalyticsService";
 
 function insertPurchase(opts: {
@@ -78,43 +76,6 @@ describe("adminAnalyticsService", () => {
   beforeEach(() => {
     testDb = createTestDb();
     base = seedBaseData(testDb);
-  });
-
-  describe("isAdminAnalyticsPeriod", () => {
-    it("accepts known periods", () => {
-      expect(isAdminAnalyticsPeriod("7d")).toBe(true);
-      expect(isAdminAnalyticsPeriod("30d")).toBe(true);
-      expect(isAdminAnalyticsPeriod("12m")).toBe(true);
-      expect(isAdminAnalyticsPeriod("all")).toBe(true);
-    });
-
-    it("rejects unknown periods", () => {
-      expect(isAdminAnalyticsPeriod("today")).toBe(false);
-      expect(isAdminAnalyticsPeriod("")).toBe(false);
-    });
-  });
-
-  describe("getStartDateForPeriod", () => {
-    const now = new Date("2026-04-25T12:00:00.000Z");
-
-    it("returns 7 days ago for 7d", () => {
-      const start = getStartDateForPeriod({ period: "7d", now });
-      expect(start).toBe("2026-04-18T12:00:00.000Z");
-    });
-
-    it("returns 30 days ago for 30d", () => {
-      const start = getStartDateForPeriod({ period: "30d", now });
-      expect(start).toBe("2026-03-26T12:00:00.000Z");
-    });
-
-    it("returns 12 months ago for 12m", () => {
-      const start = getStartDateForPeriod({ period: "12m", now });
-      expect(start).toBe("2025-04-25T12:00:00.000Z");
-    });
-
-    it("returns null for all", () => {
-      expect(getStartDateForPeriod({ period: "all", now })).toBeNull();
-    });
   });
 
   describe("getTotalRevenue", () => {
